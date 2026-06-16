@@ -18,7 +18,7 @@ func main() {
 			fmt.Println("Error reading input:", err)
 			return
 		}
-		fmt.Printf("%v: command not found", i)
+		fmt.Printf("%v: command not found\n", i)
 
 	}
 
