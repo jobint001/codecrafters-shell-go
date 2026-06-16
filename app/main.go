@@ -31,6 +31,7 @@ func main() {
 		switch command {
 		case "echo":
 			fmt.Println(input[5:]) // Print everything after "echo "
+			continue
 		default:	
 		}
 		fmt.Printf("%v: command not found\n", input)
