@@ -32,10 +32,24 @@ func main() {
 		case "echo":
 			fmt.Println(input[5:]) // Print everything after "echo "
 			continue
+		case "type":
+			handleTypeCommand(input[5:])
+			continue
 		default:	
 		}
 		fmt.Printf("%v: command not found\n", input)
 
 	}
+
+
+}
+
+func handleTypeCommand(input string) {
+
+	switch input{
+	case "echo","exit","type":
+		fmt.Printf("%v is a shell builtin",input)
+	}
+	
 
 }
