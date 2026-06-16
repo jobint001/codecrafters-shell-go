@@ -50,7 +50,7 @@ func handleTypeCommand(input string) {
 	case "echo","exit","type":
 		fmt.Printf("%v is a shell builtin\n",input)
 	default:
-		fmt.Printf("%v: command not found\n", input)
+		fmt.Printf("%v: not found\n", input)
 
 	}
 	
