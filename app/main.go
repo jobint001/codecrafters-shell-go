@@ -24,7 +24,6 @@ func main() {
 		}
 		i = line[:len(line)-1] // Remove the newline character
 		if i == "exit" {
-			fmt.Println("Exiting...")
 			return
 		}
 		fmt.Printf("%v: command not found\n", i)
