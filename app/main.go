@@ -46,7 +46,7 @@ func main() {
 }
 
 func handleTypeCommand(input string) {
-	var found bool
+	
 	switch input {
 	case "echo", "exit", "type":
 		fmt.Printf("%v is a shell builtin\n", input)
