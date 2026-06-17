@@ -40,6 +40,8 @@ func main() {
 			if len(input) > len(command) {
 				runExternalPgm(command, input[len(command)+1:])
 
+			}else{
+				fmt.Printf("%v: command not found\n", input)
 			}
 
 		}
@@ -96,5 +98,6 @@ func runExternalPgm(command, input string) {
 		//fmt.Printf(path)
 	}
 	fmt.Printf("%v: command not found\n", input)
+	
 
 }
