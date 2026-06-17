@@ -37,10 +37,13 @@ func main() {
 			handleTypeCommand(input[5:])
 			continue
 		default:
-			runExternalPgm(command, input[len(command)+1:])
+			if len(input) > len(command) {
+				runExternalPgm(command, input[len(command)+1:])
+
+			}
 
 		}
-		
+
 	}
 
 }
@@ -74,7 +77,7 @@ func handleTypeCommand(input string) {
 
 func runExternalPgm(command, input string) {
 
-	args := strings.Split(input," ")
+	args := strings.Split(input, " ")
 	path := os.Getenv("PATH")
 	paths := strings.SplitSeq(path, string(os.PathListSeparator))
 	//fmt.Println(paths)
@@ -84,12 +87,11 @@ func runExternalPgm(command, input string) {
 		if err != nil {
 			continue
 		}
-		cmd := exec.Command(command,args...)
-		cmd.Stdout= os.Stdout
-		cmd.Stderr= os.Stderr
+		cmd := exec.Command(command, args...)
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
 		cmd.Run()
 
-		
 		return
 		//fmt.Printf(path)
 	}
