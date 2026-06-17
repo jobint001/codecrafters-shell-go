@@ -54,7 +54,7 @@ func handleTypeCommand(input string) {
 	default:
 		path := os.Getenv("PATH")
 		paths := strings.Split(path, ":")
-		fmt.Println(paths)
+		//fmt.Println(paths)
 		for _,p := range paths {
 			path, err := exec.LookPath(fmt.Sprintf("%s/%s", p, input))
 			if err != nil {
