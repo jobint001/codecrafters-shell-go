@@ -80,7 +80,7 @@ func runExternalPgm(command, input string) {
 	//fmt.Println(paths)
 	for p := range paths {
 		err := os.Chdir(p)
-		path, err = exec.LookPath(fmt.Sprintf("%s/%s", p, command))
+		path, err = exec.LookPath(fmt.Sprintf("%s", command))
 		if err != nil {
 			continue
 		}
