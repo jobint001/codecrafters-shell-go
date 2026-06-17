@@ -40,8 +40,7 @@ func main() {
 			runExternalPgm(command, input[len(command)+1:])
 
 		}
-		fmt.Printf("%v: command not found\n", input)
-
+		
 	}
 
 }
@@ -67,7 +66,7 @@ func handleTypeCommand(input string) {
 			//fmt.Printf(path)
 		}
 
-		
+		fmt.Printf("%v: not found\n", input)
 
 	}
 
@@ -91,5 +90,6 @@ func runExternalPgm(command, input string) {
 		return
 		//fmt.Printf(path)
 	}
-	fmt.Printf("%v: not found\n", input)
+	fmt.Printf("%v: command not found\n", input)
+
 }
