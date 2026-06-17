@@ -84,7 +84,7 @@ func runExternalPgm(command, input string) {
 		if err != nil {
 			continue
 		}
-		cmd := exec.Command(path,args...)
+		cmd := exec.Command(command,args...)
 		cmd.Stdout= os.Stdout
 		cmd.Stderr= os.Stderr
 		cmd.Run()
