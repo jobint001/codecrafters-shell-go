@@ -3,7 +3,9 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"log"
 	"os"
+	"os/exec"
 	"strings"
 )
 
@@ -35,24 +37,36 @@ func main() {
 		case "type":
 			handleTypeCommand(input[5:])
 			continue
-		default:	
+		default:
 		}
 		fmt.Printf("%v: command not found\n", input)
 
 	}
 
-
 }
 
 func handleTypeCommand(input string) {
+	var found bool
+	switch input {
+	case "echo", "exit", "type":
+		fmt.Printf("%v is a shell builtin\n", input)
 
-	switch input{
-	case "echo","exit","type":
-		fmt.Printf("%v is a shell builtin\n",input)
 	default:
+		path := os.Getenv("PATH")
+		paths := strings.Split(path, ":")
+		fmt.Println(paths)
+		for _,p := range paths {
+			path, err := exec.LookPath(fmt.Sprintf("%s/%s", p, input))
+			if err != nil {
+				log.Fatal(err)
+			}
+			fmt.Printf("%v is %s",input,path)
+			return
+			//fmt.Printf(path)
+		}
+
 		fmt.Printf("%v: not found\n", input)
 
 	}
-	
 
 }
