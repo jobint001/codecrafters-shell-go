@@ -37,6 +37,8 @@ func main() {
 			handleTypeCommand(input[5:])
 			continue
 		default:
+			runExternalPgm(command, input[len(command)+1:])
+
 		}
 		fmt.Printf("%v: command not found\n", input)
 
@@ -69,4 +71,24 @@ func handleTypeCommand(input string) {
 
 	}
 
+}
+
+func runExternalPgm(command, input string) {
+
+	args := strings.Split(input," ")
+	path := os.Getenv("PATH")
+	paths := strings.SplitSeq(path, string(os.PathListSeparator))
+	//fmt.Println(paths)
+	for p := range paths {
+		err := os.Chdir(p)
+		path, err = exec.LookPath(fmt.Sprintf("%s/%s", p, command))
+		if err != nil {
+			continue
+		}
+		exec.Command(path,args...)
+
+		
+		return
+		//fmt.Printf(path)
+	}
 }
