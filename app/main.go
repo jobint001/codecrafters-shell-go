@@ -59,7 +59,7 @@ func handleTypeCommand(input string) {
 			err := os.Chdir(p)
 			path, err := exec.LookPath(fmt.Sprintf("%s/%s", p, input))
 			if err != nil {
-				log.Fatal(err)
+			    continue
 			}
 			fmt.Printf("%v is %s\n",input,path)
 			return 
