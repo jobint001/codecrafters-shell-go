@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"strings"
@@ -46,7 +45,7 @@ func main() {
 }
 
 func handleTypeCommand(input string) {
-	
+
 	switch input {
 	case "echo", "exit", "type":
 		fmt.Printf("%v is a shell builtin\n", input)
@@ -55,14 +54,14 @@ func handleTypeCommand(input string) {
 		path := os.Getenv("PATH")
 		paths := strings.Split(path, ":")
 		//fmt.Println(paths)
-		for _,p := range paths {
+		for _, p := range paths {
 			err := os.Chdir(p)
 			path, err := exec.LookPath(fmt.Sprintf("%s/%s", p, input))
 			if err != nil {
-			    continue
+				continue
 			}
-			fmt.Printf("%v is %s\n",input,path)
-			return 
+			fmt.Printf("%v is %s\n", input, path)
+			return
 			//fmt.Printf(path)
 		}
 
