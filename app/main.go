@@ -56,12 +56,13 @@ func handleTypeCommand(input string) {
 		paths := strings.Split(path, ":")
 		//fmt.Println(paths)
 		for _,p := range paths {
+			err := os.Chdir(p)
 			path, err := exec.LookPath(fmt.Sprintf("%s/%s", p, input))
 			if err != nil {
 				log.Fatal(err)
 			}
-			fmt.Printf("%v is %s",input,path)
-			return
+			fmt.Printf("%v is %s\n",input,path)
+			return 
 			//fmt.Printf(path)
 		}
 
