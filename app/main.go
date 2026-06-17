@@ -52,7 +52,7 @@ func handleTypeCommand(input string) {
 
 	default:
 		path := os.Getenv("PATH")
-		paths := strings.Split(path, ":")
+		paths := strings.Split(path, string(os.PathListSeparator))
 		//fmt.Println(paths)
 		for _, p := range paths {
 			err := os.Chdir(p)
