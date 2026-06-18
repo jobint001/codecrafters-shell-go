@@ -42,7 +42,7 @@ func main() {
 			case "exit":
 				os.Exit(0)
 			case "echo":
-				fmt.Printf(strings.Join(args," "))
+				fmt.Println(strings.Join(args," "))
 			case "type":
 				handleType(fields[1])
 			case "pwd":
