@@ -82,6 +82,13 @@ func handlePwd() {
 
 }
 func handleCd(input string) {
+
+	if input == "~"{
+		homePath := os.Getenv("HOME")
+		os.Chdir(homePath)
+		return
+	}
+
 	_, err := os.Stat(input)
 	
 	if errors.Is(err, fs.ErrNotExist) {
