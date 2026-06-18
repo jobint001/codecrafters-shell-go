@@ -17,6 +17,7 @@ var builtInCommands = []string{
 	"exit",
 	"pwd",
 	"cd",
+	"github.com/google/shlex",
 }
 
 func main() {
@@ -25,7 +26,7 @@ func main() {
 		fmt.Print("$ ")
 		command, err := reader.ReadString('\n')
 		command = strings.TrimSpace(command)
-		fields := strings.Fields(command)
+		fields := shlex.split(command)
 
 		if len(fields[0]) == 0 {
 			os.Exit(0)
@@ -101,7 +102,7 @@ func handleCd(input string) {
 func handleEcho(input []string, command string) {
 
 	if strings.HasPrefix(input[0], "'") {
-		fmt.Println(command[6:len(command)-1])
+		fmt.Println(command[6 : len(command)-1])
 		return
 	}
 	for _, value := range input {
