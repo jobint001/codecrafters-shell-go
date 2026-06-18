@@ -101,7 +101,7 @@ func handleCd(input string) {
 func handleEcho(input []string, command string) {
 
 	if strings.HasPrefix(input[0], "'") {
-		fmt.Println(command[6:len(command)-2])
+		fmt.Println(command[6:len(command)-1])
 		return
 	}
 	for _, value := range input {
