@@ -2,7 +2,9 @@ package main
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 	"os/exec"
 	"slices"
@@ -14,6 +16,7 @@ var builtInCommands = []string{
 	"type",
 	"exit",
 	"pwd",
+	"cd",
 }
 
 func main() {
@@ -43,6 +46,8 @@ func main() {
 				handleType(fields[1])
 			case "pwd":
 				handlePwd()
+			case "cd":
+				handleCd(fields[1])
 			}
 		} else if _, err := exec.LookPath(fields[0]); err == nil {
 			cmd := exec.Command(fields[0], fields[1:]...)
@@ -71,8 +76,21 @@ func handleType(command string) {
 func handlePwd() {
 	path, err := os.Getwd()
 	if err != nil {
-		return 
+		return
 	}
 	fmt.Println(path)
-	
+
+}
+func handleCd(input string) {
+	_, err := os.Stat(input)
+	if err != nil {
+		
+		return
+	}
+	if errors.Is(err, fs.ErrNotExist) {
+		fmt.Printf("%s is not a file or directory", input)
+		return 
+	}
+	os.Chdir(input)
+
 }
