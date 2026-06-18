@@ -5,95 +5,74 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"slices"
 	"strings"
 )
 
-// Ensures gofmt doesn't remove the "fmt" import in stage 1 (feel free to remove this!)
-var _ = fmt.Print
+var builtInCommands = []string{
+	"echo",
+	"type",
+	"exit",
+	"pwd",
+}
 
 func main() {
-	// TODO: Uncomment the code below to pass the first stage
-
 	reader := bufio.NewReader(os.Stdin)
-
 	for {
 		fmt.Print("$ ")
-		var input string
-		line, err := reader.ReadString('\n')
+		command, err := reader.ReadString('\n')
+		command = strings.TrimSpace(command)
+		fields := strings.Fields(command)
+
+		if len(fields[0]) == 0 {
+			os.Exit(0)
+		}
+
 		if err != nil {
-			fmt.Println("Error reading input:", err)
-			return
+			fmt.Fprintln(os.Stderr, "Error reading input: ", err)
+			os.Exit(1)
 		}
-		input = line[:len(line)-1] // Remove the newline character
-		if input == "exit" {
-			return
-		}
-		command := strings.Split(input, " ")[0]
-		switch command {
-		case "echo":
-			fmt.Println(input[5:]) // Print everything after "echo "
-			continue
-		case "type":
-			handleTypeCommand(input[5:])
-			continue
-		default:
-			if len(input) > len(command) {
-				runExternalPgm(command, input[len(command)+1:])
 
-			} else {
-				fmt.Printf("%v: command not found\n", input)
+		if slices.Contains(builtInCommands, fields[0]) {
+			switch fields[0] {
+			case "exit":
+				os.Exit(0)
+			case "echo":
+				fmt.Println(command[5:])
+			case "type":
+				handleType(fields[1])
+			case "pwd":
+				handlePwd()
 			}
-
+		} else if _, err := exec.LookPath(fields[0]); err == nil {
+			cmd := exec.Command(fields[0], fields[1:]...)
+			cmd.Stdout = os.Stdout
+			cmd.Stderr = os.Stderr
+			cmd.Run()
+		} else {
+			fmt.Printf("%s: command not found\n", fields[0])
 		}
 
 	}
-
 }
 
-func handleTypeCommand(input string) {
-
-	switch input {
-	case "echo", "exit", "type":
-		fmt.Printf("%v is a shell builtin\n", input)
-
-	default:
-		path := os.Getenv("PATH")
-		paths := strings.Split(path, string(os.PathListSeparator))
-		//fmt.Println(paths)
-		for _, p := range paths {
-			err := os.Chdir(p)
-			path, err := exec.LookPath(fmt.Sprintf("%s/%s", p, input))
-			if err != nil {
-				continue
-			}
-			fmt.Printf("%v is %s\n", input, path)
-			return
-			//fmt.Printf(path)
-		}
-
-		fmt.Printf("%v: not found\n", input)
-
+func handleType(command string) {
+	if slices.Contains(builtInCommands, command) {
+		fmt.Printf("%s is a shell builtin\n", command)
+		return
+	} else if path, err := exec.LookPath(command); err == nil {
+		fmt.Printf("%s is %s\n", command, path)
+		return
 	}
 
+	fmt.Printf("%s: not found\n", command)
 }
 
-func runExternalPgm(command, input string) {
-
-	args := strings.Split(input, " ")
+func handlePwd() {
+	path, err := os.Getwd()
+	if err != nil {
+		return 
+	}
+	fmt.Println(path)
 	
-	//fmt.Println(paths)
-
-	_, err := exec.LookPath(fmt.Sprintf("%s", command))
-	if err == nil {
-		cmd := exec.Command(command, args...)
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
-		cmd.Run()
-
-	}
-
-	return
-
-	fmt.Printf("%v: command not found\n", input)
-
 }
