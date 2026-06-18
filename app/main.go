@@ -83,12 +83,9 @@ func handlePwd() {
 }
 func handleCd(input string) {
 	_, err := os.Stat(input)
-	if err != nil {
-		
-		return
-	}
+	
 	if errors.Is(err, fs.ErrNotExist) {
-		fmt.Printf("%s is not a file or directory", input)
+		fmt.Printf("%s: No such file or directory", input)
 		return 
 	}
 	os.Chdir(input)
