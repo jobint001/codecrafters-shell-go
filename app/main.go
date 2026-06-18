@@ -41,7 +41,7 @@ func main() {
 			case "exit":
 				os.Exit(0)
 			case "echo":
-				fmt.Println(command[5:])
+				handleEcho(fields[1:], command)
 			case "type":
 				handleType(fields[1])
 			case "pwd":
@@ -83,18 +83,31 @@ func handlePwd() {
 }
 func handleCd(input string) {
 
-	if input == "~"{
+	if input == "~" {
 		homePath := os.Getenv("HOME")
 		os.Chdir(homePath)
 		return
 	}
 
 	_, err := os.Stat(input)
-	
+
 	if errors.Is(err, fs.ErrNotExist) {
 		fmt.Printf("cd: %s: No such file or directory\n", input)
-		return 
+		return
 	}
 	os.Chdir(input)
 
+}
+func handleEcho(input []string, command string) {
+
+	if strings.HasPrefix(input[0], "'") {
+		fmt.Println(command[6:len(command)-2])
+		return
+	}
+	for _, value := range input {
+		fmt.Print(value)
+		fmt.Print(" ")
+	}
+
+	println("")
 }
