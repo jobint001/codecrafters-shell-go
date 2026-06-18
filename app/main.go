@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"slices"
 	"strings"
+	"github.com/google/shlex"
 )
 
 var builtInCommands = []string{
@@ -17,7 +18,6 @@ var builtInCommands = []string{
 	"exit",
 	"pwd",
 	"cd",
-	"github.com/google/shlex",
 }
 
 func main() {
@@ -26,12 +26,12 @@ func main() {
 		fmt.Print("$ ")
 		command, err := reader.ReadString('\n')
 		command = strings.TrimSpace(command)
-		fields := shlex.split(command)
+		fields,_ := shlex.Split(command)
 
 		if len(fields[0]) == 0 {
 			os.Exit(0)
 		}
-
+		args := fields[1:]
 		if err != nil {
 			fmt.Fprintln(os.Stderr, "Error reading input: ", err)
 			os.Exit(1)
@@ -42,7 +42,7 @@ func main() {
 			case "exit":
 				os.Exit(0)
 			case "echo":
-				handleEcho(fields[1:], command)
+				fmt.Printf(strings.Join(args," "))
 			case "type":
 				handleType(fields[1])
 			case "pwd":
@@ -99,16 +99,4 @@ func handleCd(input string) {
 	os.Chdir(input)
 
 }
-func handleEcho(input []string, command string) {
 
-	if strings.HasPrefix(input[0], "'") {
-		fmt.Println(command[6 : len(command)-1])
-		return
-	}
-	for _, value := range input {
-		fmt.Print(value)
-		fmt.Print(" ")
-	}
-
-	println("")
-}
