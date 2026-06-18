@@ -85,7 +85,7 @@ func handleCd(input string) {
 	_, err := os.Stat(input)
 	
 	if errors.Is(err, fs.ErrNotExist) {
-		fmt.Printf("%s: No such file or directory", input)
+		fmt.Printf("cd: %s: No such file or directory\n", input)
 		return 
 	}
 	os.Chdir(input)
