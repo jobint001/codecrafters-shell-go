@@ -29,21 +29,40 @@ func main() {
 		command = strings.TrimSpace(command)
 		fields, _ := shlex.Split(command)
 
-		if len(fields[0]) == 0 {
+		if err != nil {
+			// EOF (e.g. Ctrl-D) terminates the shell.
 			os.Exit(0)
 		}
-		args := fields[1:]
-		if err != nil {
-			fmt.Fprintln(os.Stderr, "Error reading input: ", err)
-			os.Exit(1)
+		if len(fields) == 0 {
+			// Empty line: just show a fresh prompt.
+			continue
 		}
+
+		fields, redirectFile, rerr := parseRedirect(fields)
+		if rerr != nil {
+			fmt.Fprintln(os.Stderr, rerr)
+			continue
+		}
+
+		// Resolve where stdout should go.
+		stdout := os.Stdout
+		if redirectFile != "" {
+			f, ferr := os.Create(redirectFile)
+			if ferr != nil {
+				fmt.Fprintln(os.Stderr, ferr)
+				continue
+			}
+			stdout = f
+		}
+
+		args := fields[1:]
 
 		if slices.Contains(builtInCommands, fields[0]) {
 			switch fields[0] {
 			case "exit":
 				os.Exit(0)
 			case "echo":
-				handleEcho(args)
+				fmt.Fprintln(stdout, strings.Join(args, " "))
 			case "type":
 				handleType(fields[1])
 			case "pwd":
@@ -53,11 +72,15 @@ func main() {
 			}
 		} else if _, err := exec.LookPath(fields[0]); err == nil {
 			cmd := exec.Command(fields[0], fields[1:]...)
-			cmd.Stdout = os.Stdout
+			cmd.Stdout = stdout
 			cmd.Stderr = os.Stderr
 			cmd.Run()
 		} else {
 			fmt.Printf("%s: command not found\n", fields[0])
+		}
+
+		if stdout != os.Stdout {
+			stdout.Close()
 		}
 
 	}
@@ -101,34 +124,17 @@ func handleCd(input string) {
 
 }
 
-func handleEcho(args []string) {
-	var output strings.Builder
-	var file string
-	if slices.Contains(args, ">") {
-		for i, value := range args {
-			if args[i] == ">" {
-				file = args[i+1]
-				break
-			} else {
-				output.WriteString(value)
+// parseRedirect scans fields for a stdout redirection operator (">" or "1>")
+// and returns the command fields with the operator + target removed, plus the
+// target filename ("" if there is no redirection).
+func parseRedirect(fields []string) ([]string, string, error) {
+	for i, f := range fields {
+		if f == ">" || f == "1>" {
+			if i+1 >= len(fields) {
+				return nil, "", fmt.Errorf("syntax error: expected filename after %q", f)
 			}
-
+			return fields[:i], fields[i+1], nil
 		}
-		
-		f, err := os.Create(file)
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-		_, err = f.WriteString(output.String())
-		if err != nil {
-			fmt.Println(err)
-			f.Close()
-			return
-		}
-
-	} else {
-		fmt.Println(strings.Join(args, " "))
 	}
-
+	return fields, "", nil
 }
