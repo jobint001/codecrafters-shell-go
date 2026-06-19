@@ -114,7 +114,7 @@ func handleEcho(args []string) {
 			}
 
 		}
-		print(output.String())
+		
 		f, err := os.Create(file)
 		if err != nil {
 			fmt.Println(err)
