@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"slices"
 	"strings"
+
 	"github.com/google/shlex"
 )
 
@@ -26,7 +27,7 @@ func main() {
 		fmt.Print("$ ")
 		command, err := reader.ReadString('\n')
 		command = strings.TrimSpace(command)
-		fields,_ := shlex.Split(command)
+		fields, _ := shlex.Split(command)
 
 		if len(fields[0]) == 0 {
 			os.Exit(0)
@@ -42,7 +43,7 @@ func main() {
 			case "exit":
 				os.Exit(0)
 			case "echo":
-				fmt.Println(strings.Join(args," "))
+				handleEcho(args)
 			case "type":
 				handleType(fields[1])
 			case "pwd":
@@ -100,3 +101,34 @@ func handleCd(input string) {
 
 }
 
+func handleEcho(args []string) {
+	var output strings.Builder
+	var file string
+	if slices.Contains(args, ">") {
+		for i, value := range args {
+			if args[i] == ">" {
+				file = args[i+1]
+				break
+			} else {
+				output.WriteString(value)
+			}
+
+		}
+		print(output.String())
+		f, err := os.Create(file)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		_, err = f.WriteString(output.String())
+		if err != nil {
+			fmt.Println(err)
+			f.Close()
+			return
+		}
+
+	} else {
+		fmt.Println(strings.Join(args, " "))
+	}
+
+}
