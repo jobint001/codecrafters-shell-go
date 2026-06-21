@@ -38,12 +38,13 @@ func main() {
 			continue
 		}
 
-		fields, redirectFile, rerr := parseRedirect(fields)
+		fields, redirectFile,redirectErr, rerr := parseRedirect(fields)
 		if rerr != nil {
 			fmt.Fprintln(os.Stderr, rerr)
 			continue
 		}
 
+		
 		// Resolve where stdout should go.
 		stdout := os.Stdout
 		if redirectFile != "" {
@@ -55,6 +56,15 @@ func main() {
 			stdout = f
 		}
 
+		stderr := os.Stderr
+		if redirectErr != ""{
+			f, ferr := os.Create(redirectErr)
+			if ferr != nil {
+				fmt.Fprintln(os.Stderr,ferr)
+				continue
+			}
+			stderr= f
+		}
 		args := fields[1:]
 
 		if slices.Contains(builtInCommands, fields[0]) {
@@ -73,7 +83,7 @@ func main() {
 		} else if _, err := exec.LookPath(fields[0]); err == nil {
 			cmd := exec.Command(fields[0], fields[1:]...)
 			cmd.Stdout = stdout
-			cmd.Stderr = os.Stderr
+			cmd.Stderr = stderr
 			cmd.Run()
 		} else {
 			fmt.Printf("%s: command not found\n", fields[0])
@@ -127,14 +137,17 @@ func handleCd(input string) {
 // parseRedirect scans fields for a stdout redirection operator (">" or "1>")
 // and returns the command fields with the operator + target removed, plus the
 // target filename ("" if there is no redirection).
-func parseRedirect(fields []string) ([]string, string, error) {
+func parseRedirect(fields []string) ([]string,string, string, error) {
 	for i, f := range fields {
 		if f == ">" || f == "1>" {
 			if i+1 >= len(fields) {
-				return nil, "", fmt.Errorf("syntax error: expected filename after %q", f)
+				return nil, "","", fmt.Errorf("syntax error: expected filename after %q", f)
 			}
-			return fields[:i], fields[i+1], nil
+			return fields[:i], fields[i+1],"", nil
+		}else if f == "2>"{
+			return fields[:i],"", fields[i+1], nil
+
 		}
 	}
-	return fields, "", nil
+	return fields, "","", nil
 }
