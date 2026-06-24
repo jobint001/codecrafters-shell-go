@@ -44,37 +44,14 @@ func main() {
 			continue
 		}
 
-		// Resolve where stdout should go.
-		stdout := os.Stdout
-		var f *os.File
-		var ferr error
-		if redirectFile != "" {
-			if append {
-				f, ferr = os.OpenFile(redirectFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-				if ferr != nil {
-					fmt.Fprintln(os.Stderr, ferr)
-					continue
-				}
-			} else {
-				f, ferr = os.Create(redirectFile)
-				if ferr != nil {
-					fmt.Fprintln(os.Stderr, ferr)
-					continue
-				}
-			}
-
-			stdout = f
+		// Resolve where stdout/stderr should go. The continue lives here, in the
+		// loop — the helper just returns an error for us to act on.
+		stdout, stderr, cleanup, ferr := openRedirects(redirectFile, redirectErr, append)
+		if ferr != nil {
+			fmt.Fprintln(os.Stderr, ferr)
+			continue
 		}
 
-		stderr := os.Stderr
-		if redirectErr != "" {
-			f, ferr := os.Create(redirectErr)
-			if ferr != nil {
-				fmt.Fprintln(os.Stderr, ferr)
-				continue
-			}
-			stderr = f
-		}
 		args := fields[1:]
 
 		if slices.Contains(builtInCommands, fields[0]) {
@@ -99,11 +76,48 @@ func main() {
 			fmt.Printf("%s: command not found\n", fields[0])
 		}
 
-		if stdout != os.Stdout {
-			stdout.Close()
-		}
-
+		cleanup()
 	}
+}
+
+// openRedirects opens the stdout/stderr redirect targets (if any) and returns
+// the destinations to use plus a cleanup func that closes whatever was opened.
+// When a path is empty the corresponding standard stream is returned unchanged.
+func openRedirects(stdoutPath, stderrPath string, appendOut bool) (stdout, stderr *os.File, cleanup func(), err error) {
+	stdout, stderr = os.Stdout, os.Stderr
+
+	var opened []*os.File
+	cleanup = func() {
+		for _, f := range opened {
+			f.Close()
+		}
+	}
+
+	if stdoutPath != "" {
+		flag := os.O_CREATE | os.O_WRONLY | os.O_TRUNC
+		if appendOut {
+			flag = os.O_CREATE | os.O_WRONLY | os.O_APPEND
+		}
+		f, e := os.OpenFile(stdoutPath, flag, 0644)
+		if e != nil {
+			cleanup()
+			return nil, nil, nil, e
+		}
+		opened = append(opened, f)
+		stdout = f
+	}
+
+	if stderrPath != "" {
+		f, e := os.OpenFile(stderrPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
+		if e != nil {
+			cleanup()
+			return nil, nil, nil, e
+		}
+		opened = append(opened, f)
+		stderr = f
+	}
+
+	return stdout, stderr, cleanup, nil
 }
 
 func handleType(command string) {
