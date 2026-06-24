@@ -53,11 +53,12 @@ func main() {
 				f, ferr = os.Open(redirectFile)
 				if ferr != nil {
 					fmt.Fprintln(os.Stderr,ferr)
-					continue
+					goto middle
 				}
 				defer f.Close()
 				goto end
 			}
+			middle:
 			f, ferr = os.Create(redirectFile)
 			if ferr != nil {
 				fmt.Fprintln(os.Stderr, ferr)
@@ -158,7 +159,7 @@ func parseRedirect(fields []string) ([]string, string, string, bool, error) {
 		} else if f == "2>" {
 			return fields[:i], "", fields[i+1], false, nil
 
-		} else if f == ">>" {
+		} else if f == ">>" || f=="1>>" {
 			return fields[:i], "", fields[i+1], true, nil
 		}
 	}
