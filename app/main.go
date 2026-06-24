@@ -38,32 +38,43 @@ func main() {
 			continue
 		}
 
-		fields, redirectFile,redirectErr, rerr := parseRedirect(fields)
+		fields, redirectFile, redirectErr, append, rerr := parseRedirect(fields)
 		if rerr != nil {
 			fmt.Fprintln(os.Stderr, rerr)
 			continue
 		}
 
-		
 		// Resolve where stdout should go.
 		stdout := os.Stdout
+		var f *os.File
+		var ferr error
 		if redirectFile != "" {
-			f, ferr := os.Create(redirectFile)
+			if append {
+				f, ferr = os.Open(redirectFile)
+				if ferr != nil {
+					fmt.Fprintln(os.Stderr,ferr)
+					continue
+				}
+				defer f.Close()
+				goto end
+			}
+			f, ferr = os.Create(redirectFile)
 			if ferr != nil {
 				fmt.Fprintln(os.Stderr, ferr)
 				continue
 			}
+			end:
 			stdout = f
 		}
 
 		stderr := os.Stderr
-		if redirectErr != ""{
+		if redirectErr != "" {
 			f, ferr := os.Create(redirectErr)
 			if ferr != nil {
-				fmt.Fprintln(os.Stderr,ferr)
+				fmt.Fprintln(os.Stderr, ferr)
 				continue
 			}
-			stderr= f
+			stderr = f
 		}
 		args := fields[1:]
 
@@ -137,17 +148,19 @@ func handleCd(input string) {
 // parseRedirect scans fields for a stdout redirection operator (">" or "1>")
 // and returns the command fields with the operator + target removed, plus the
 // target filename ("" if there is no redirection).
-func parseRedirect(fields []string) ([]string,string, string, error) {
+func parseRedirect(fields []string) ([]string, string, string, bool, error) {
 	for i, f := range fields {
 		if f == ">" || f == "1>" {
 			if i+1 >= len(fields) {
-				return nil, "","", fmt.Errorf("syntax error: expected filename after %q", f)
+				return nil, "", "", false, fmt.Errorf("syntax error: expected filename after %q", f)
 			}
-			return fields[:i], fields[i+1],"", nil
-		}else if f == "2>"{
-			return fields[:i],"", fields[i+1], nil
+			return fields[:i], fields[i+1], "", false, nil
+		} else if f == "2>" {
+			return fields[:i], "", fields[i+1], false, nil
 
+		} else if f == ">>" {
+			return fields[:i], "", fields[i+1], true, nil
 		}
 	}
-	return fields, "","", nil
+	return fields, "", "", false, nil
 }
