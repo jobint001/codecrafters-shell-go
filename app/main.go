@@ -50,17 +50,11 @@ func main() {
 		var ferr error
 		if redirectFile != "" {
 			if append {
-				f, ferr = os.Open(redirectFile)
+				f, ferr = os.OpenFile(redirectFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 				if ferr != nil {
-					f, ferr = os.Create(redirectFile)
-					if ferr != nil {
-						fmt.Fprintln(os.Stderr, ferr)
-						continue
-					}
-
+					fmt.Fprintln(os.Stderr, ferr)
+					continue
 				}
-				defer f.Close()
-
 			} else {
 				f, ferr = os.Create(redirectFile)
 				if ferr != nil {
@@ -164,7 +158,7 @@ func parseRedirect(fields []string) ([]string, string, string, bool, error) {
 			return fields[:i], "", fields[i+1], false, nil
 
 		} else if f == ">>" || f == "1>>" {
-			return fields[:i], "", fields[i+1], true, nil
+			return fields[:i], fields[i+1], "", true, nil
 		}
 	}
 	return fields, "", "", false, nil
